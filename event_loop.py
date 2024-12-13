@@ -14,6 +14,11 @@ class Event:
     t: int
 
 
+@dataclass(kw_only=True, frozen=True)
+class LoopStarted(Event):
+    pass
+
+
 class ProcessProtocol(Protocol):
     def act(self, event: Event) -> list[Event]: ...
 
@@ -27,6 +32,7 @@ class EventLoop:
     ) -> None:
         self.processes = processes
         self.events: deque[Event] = deque()
+        self.add_event(LoopStarted(t=0))
         for event in events or []:
             self.add_event(event)
         self.current_timestep = current_timestep
