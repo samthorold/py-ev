@@ -1,10 +1,9 @@
 """PyEv Python Discrete Event Loop."""
 
+import logging
 from collections import deque
 from dataclasses import dataclass
-import logging
-from typing import Protocol
-
+from typing import Protocol, Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +19,14 @@ class LoopStarted(Event):
 
 
 class ProcessProtocol(Protocol):
-    def act(self, event: Event) -> list[Event]: ...
+    def act(self, event: Event) -> Sequence[Event]: ...
 
 
 class EventLoop:
     def __init__(
         self,
         processes: list[ProcessProtocol],
-        events: list[Event] | None = None,
+        events: Sequence[Event] | None = None,
         current_timestep: int = 0,
     ) -> None:
         self.processes = processes
