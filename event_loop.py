@@ -61,4 +61,3 @@ class EventLoop:
     def run(self) -> None:
         while self.tick():
             pass
-
