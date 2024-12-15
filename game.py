@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from itertools import product
 import random
+import uuid
 
 
 BLACKJACK = 21
@@ -119,13 +120,19 @@ class Hand:
 
 
 class Player(ABC):
-    def __init__(self, name: str, hands: list[Hand] | None = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        hands: list[Hand] | None = None,
+        id: str | None = None,
+    ) -> None:
+        self.id = uuid.uuid4().hex if id is None else id
         self.name = name
         self.hands: list[Hand] = [] if hands is None else hands
         self.current_hand_idx = 0
 
     def __hash__(self) -> int:
-        return hash(self.name)
+        return hash(self.id)
 
     @abstractmethod
     def hit(self, visible_cards: list[Card], dealer: list[Card]) -> bool: ...
@@ -151,7 +158,7 @@ class Player(ABC):
         ]
 
 
-class House(Player):
+class Dealer(Player):
     def hit(self, visible_cards: list[Card], dealer: list[Card]) -> bool:
         values = self.current_hand.values()
         # https://bicyclecards.com/how-to-play/blackjack
@@ -168,8 +175,33 @@ class House(Player):
 
 
 class Table:
-    def __init__(self, deck: Deck, players: set[Player]) -> None:
+    def __init__(self, deck: Deck, players: list[Player]) -> None:
         self.deck = deck
         self.players = players
-        self.house = House(name="House")
-        self.players.add(self.house)
+        self.dealer = Dealer(name="House")
+        self.current_player_idx = 0
+        self.visible_cards: list[Card] = []
+
+    @property
+    def current_player(self) -> Player:
+        return self.players[self.current_player_idx]
+
+    def next_player(self) -> bool:
+        if self.current_player_idx == len(self.players) - 1:
+            return False
+        self.current_player_idx += 1
+        return True
+
+    def draw(self, is_visible: bool = True) -> Card:
+        card = self.deck.draw()
+        if is_visible:
+            self.visible_cards.append(card)
+        return card
+
+    def deal(self) -> None:
+        for player in self.players:
+            player.add_card(self.draw())
+        self.dealer.add_card(self.draw())
+        for player in self.players:
+            player.add_card(self.draw())
+        self.dealer.add_card(self.draw(is_visible=False))
