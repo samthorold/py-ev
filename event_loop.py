@@ -2,14 +2,16 @@
 
 import logging
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol, Sequence
+import uuid
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True)
 class Event:
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
     t: int
 
 
@@ -28,10 +30,12 @@ class EventLoop:
         processes: list[ProcessProtocol],
         events: Sequence[Event] | None = None,
         current_timestep: int = 0,
+        add_loop_started_event: bool = True,
     ) -> None:
         self.processes = processes
         self.events: deque[Event] = deque()
-        self.add_event(LoopStarted(t=0))
+        if add_loop_started_event:
+            self.add_event(LoopStarted(t=0))
         for event in events or []:
             self.add_event(event)
         self.current_timestep = current_timestep

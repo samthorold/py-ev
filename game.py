@@ -1,5 +1,10 @@
+from abc import ABC, abstractmethod
 from enum import Enum
+from itertools import product
 import random
+
+
+BLACKJACK = 21
 
 
 class Suit(Enum):
@@ -25,6 +30,23 @@ class Face(Enum):
     KING = 13
 
 
+FACE_VALUES = {
+    Face.DEUCE: (2,),
+    Face.THREE: (3,),
+    Face.FOUR: (4,),
+    Face.FIVE: (5,),
+    Face.SIX: (6,),
+    Face.SEVEN: (7,),
+    Face.EIGHT: (8,),
+    Face.NINE: (9,),
+    Face.TEN: (10,),
+    Face.JACK: (10,),
+    Face.QUEEN: (10,),
+    Face.KING: (10,),
+    Face.ACE: (1, 11),
+}
+
+
 class Card:
     def __init__(self, suit: Suit, face: Face):
         self.suit = suit
@@ -36,7 +58,7 @@ class Card:
 
 class Deck:
     @classmethod
-    def new(cls, decks: int = 1, shuffle: bool = True):
+    def new(cls, decks: int = 6, shuffle: bool = True):
         deck = cls(
             [
                 Card(suit=suit, face=rank)
@@ -76,3 +98,78 @@ class Deck:
         left = self.cards[:idx]
         right = self.cards[idx:]
         self.cards = right + left
+
+
+class Hand:
+    def __init__(self, cards: list[Card] | None = None) -> None:
+        self.cards = [] if cards is None else cards
+
+    def __len__(self) -> int:
+        return len(self.cards)
+
+    def __getitem__(self, idx: int) -> Card:
+        return self.cards[idx]
+
+    def add_card(self, card: Card) -> None:
+        self.cards.append(card)
+
+    def values(self) -> list[int]:
+        card_values = [FACE_VALUES[card.face] for card in self.cards]
+        return [sum(vals) for vals in product(*card_values)]
+
+
+class Player(ABC):
+    def __init__(self, name: str, hands: list[Hand] | None = None) -> None:
+        self.name = name
+        self.hands: list[Hand] = [] if hands is None else hands
+        self.current_hand_idx = 0
+
+    def __hash__(self) -> int:
+        return hash(self.name)
+
+    @abstractmethod
+    def hit(self, visible_cards: list[Card], dealer: list[Card]) -> bool: ...
+
+    @property
+    def current_hand(self) -> Hand:
+        return self.hands[self.current_hand_idx]
+
+    def add_card(self, card: Card) -> None:
+        self.hands[self.current_hand_idx].add_card(card)
+
+    def split(self, visible_cards: list[Card], dealer: list[Card]) -> None:
+        if len(self.current_hand) != 2:
+            return None
+        if (
+            FACE_VALUES[self.current_hand[0].face][0]
+            != FACE_VALUES[self.current_hand[1].face][0]
+        ):
+            return None
+        self.hands = [
+            Hand(cards=[self.current_hand[0]]),
+            Hand(cards=[self.current_hand[1]]),
+        ]
+
+
+class House(Player):
+    def hit(self, visible_cards: list[Card], dealer: list[Card]) -> bool:
+        values = self.current_hand.values()
+        # https://bicyclecards.com/how-to-play/blackjack
+        # If the dealer has an ace, and counting it as 11 would bring the total to 17 or more
+        # (but not over 21), the dealer must count the ace as 11 and stand
+        if any(16 < value <= BLACKJACK for value in values):
+            return False
+        if all(value > BLACKJACK for value in values):
+            return False
+        return True
+
+    def split(self, visible_cards: list[Card], dealer: list[Card]) -> None:
+        return None
+
+
+class Table:
+    def __init__(self, deck: Deck, players: set[Player]) -> None:
+        self.deck = deck
+        self.players = players
+        self.house = House(name="House")
+        self.players.add(self.house)
