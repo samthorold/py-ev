@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, frozen=True)
 class Event:
-    id: uuid.UUID = field(default_factory=uuid.uuid4)
+    id: str = field(default_factory=lambda: uuid.uuid4().hex)
     t: int
 
 

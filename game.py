@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from itertools import product
+import logging
 import random
 import uuid
+
+
+logger = logging.getLogger(__name__)
 
 
 BLACKJACK = 21
@@ -111,6 +115,9 @@ class Hand:
     def __getitem__(self, idx: int) -> Card:
         return self.cards[idx]
 
+    def __repr__(self) -> str:
+        return f"<Hand(cards={self.cards})>"
+
     def add_card(self, card: Card) -> None:
         self.cards.append(card)
 
@@ -128,7 +135,7 @@ class Player(ABC):
     ) -> None:
         self.id = uuid.uuid4().hex if id is None else id
         self.name = name
-        self.hands: list[Hand] = [] if hands is None else hands
+        self.hands = [Hand()] if hands is None else hands
         self.current_hand_idx = 0
 
     def __hash__(self) -> int:
@@ -145,6 +152,7 @@ class Player(ABC):
         self.hands[self.current_hand_idx].add_card(card)
 
     def split(self, visible_cards: list[Card], dealer: list[Card]) -> None:
+        logger.debug("%s splitting hand %r", self.id[-7:], self.current_hand)
         if len(self.current_hand) != 2:
             return None
         if (
