@@ -1,8 +1,8 @@
 import logging
 from dataclasses import dataclass
 
-from event_loop import Event, LoopStarted
-from game import Dealer, Player, Table
+from app.event_loop import Event, LoopStarted
+from app.game import Dealer, Player, Table
 
 logger = logging.getLogger(__name__)
 

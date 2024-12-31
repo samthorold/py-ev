@@ -1,18 +1,21 @@
 """PyEv Python Discrete Event Loop."""
 
 import logging
-import os
 import random
 
-from event_loop import EventLoop, ProcessProtocol
-from game import Card, Deck, Player, Table
-from processes import DealerProcess, PlayerProcess
+from app.event_loop import EventLoop, ProcessProtocol
+from app.game import Card, Deck, Player, Table
+from app.processes import DealerProcess, PlayerProcess
+from app.config import Config
 
 
 logger = logging.getLogger(__name__)
 
 
-logging.basicConfig(level=os.environ.get("PYEV_LOG_LEVEL") or logging.DEBUG)
+CONFIG = Config()
+
+
+logging.basicConfig(level=CONFIG.log_level)
 
 
 class RandomPlayer(Player):
@@ -22,7 +25,7 @@ class RandomPlayer(Player):
 
 players: list[Player] = [RandomPlayer(name="p1")]
 
-table = Table(deck=Deck.new(), players=players)
+table = Table(deck=Deck.new(decks=CONFIG.n_decks), players=players)
 
 
 processes: list[ProcessProtocol] = [

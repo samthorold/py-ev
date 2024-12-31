@@ -1,0 +1,5 @@
+-r main.txt
+black
+pytest
+mypy
+isort

@@ -90,6 +90,7 @@ class Deck:
         if not self.cards:
             raise RuntimeError("Deck is empty")
         card = self.cards.pop()
+        logger.debug("Drawing card %r", card)
         self.drawn.append(card)
         return card
 
@@ -100,6 +101,7 @@ class Deck:
         if shuffle:
             self.shuffle()
         idx = self.random.randint(0, len(self.cards)) if idx is None else idx
+        logger.debug("Cutting cards %d from %d", idx, len(self.cards))
         left = self.cards[:idx]
         right = self.cards[idx:]
         self.cards = right + left
