@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod
-from enum import Enum
-from itertools import product
 import logging
 import random
 import uuid
-
+from abc import ABC, abstractmethod
+from enum import Enum
+from itertools import product
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,10 @@
 """PyEv Python Discrete Event Loop."""
 
 import logging
+import uuid
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Protocol, Sequence
-import uuid
 
 logger = logging.getLogger(__name__)
 

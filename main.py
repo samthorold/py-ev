@@ -3,11 +3,10 @@
 import logging
 import random
 
+from app.config import Config
 from app.event_loop import EventLoop, ProcessProtocol
 from app.game import Card, Deck, Player, Table
 from app.processes import DealerProcess, PlayerProcess
-from app.config import Config
-
 
 logger = logging.getLogger(__name__)
 
