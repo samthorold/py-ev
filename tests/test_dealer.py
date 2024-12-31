@@ -6,6 +6,7 @@ from app.game import Card, Dealer, Face, Hand, Suit
 @pytest.mark.parametrize(
     "hand,expected",
     [
+        # blackjack
         (
             Hand(
                 cards=[
@@ -15,15 +16,7 @@ from app.game import Card, Dealer, Face, Hand, Suit
             ),
             False,
         ),
-        (
-            Hand(
-                cards=[
-                    Card(suit=Suit.CLUBS, face=Face.DEUCE),
-                    Card(suit=Suit.CLUBS, face=Face.TEN),
-                ]
-            ),
-            True,
-        ),
+        # < 17
         (
             Hand(
                 cards=[
@@ -33,6 +26,7 @@ from app.game import Card, Dealer, Face, Hand, Suit
             ),
             True,
         ),
+        # == 17
         (
             Hand(
                 cards=[
@@ -42,6 +36,7 @@ from app.game import Card, Dealer, Face, Hand, Suit
             ),
             False,
         ),
+        # bust
         (
             Hand(
                 cards=[
