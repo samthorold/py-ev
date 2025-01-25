@@ -62,15 +62,27 @@ class EventLoop:
         self.current_timestep = current_timestep
 
     def add_event(self, event: Event) -> None:
+        """Adds an event to the event loop.
+
+        Args:
+            event: The event to add to the event loop.
+
+        Examples:
+            >>> from app.event_loop import EventLoop, Event
+            >>> event_loop = EventLoop(processes=[])
+            >>> event_loop.add_event(Event(t=0))
+        """
         logger.debug("Adding event %r", event)
         self.events.insert(event.t + 1, event)
 
     def peek_event(self) -> Event | None:
+        """Returns the next event without removing it from the backlog."""
         if len(self.events) > 0:
             return self.events[0]
         return None
 
     def next_event(self) -> Event | None:
+        """Returns the next event and removes it from the backlog."""
         if event := self.peek_event():
             if event.t > self.current_timestep:
                 return None
@@ -78,6 +90,7 @@ class EventLoop:
         return None
 
     def tick(self) -> bool:
+        """Broadcasts all events for the current timestep to all processes."""
         logger.debug("Ticking at %d", self.current_timestep)
         while event := self.next_event():
             logger.debug("Broadcasting event %r", event)
@@ -91,5 +104,6 @@ class EventLoop:
         return False
 
     def run(self) -> None:
+        """Runs the event loop until there are no more events."""
         while self.tick():
             pass
