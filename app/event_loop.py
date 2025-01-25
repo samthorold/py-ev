@@ -21,7 +21,7 @@ class LoopStarted(Event):
 
 
 class ProcessProtocol(Protocol):
-    def act(self, event: Event) -> Sequence[Event]: ...
+    def __call__(self, event: Event) -> Sequence[Event]: ...
 
 
 class EventLoop:
@@ -43,7 +43,7 @@ class EventLoop:
         Examples:
             >>> from app.event_loop import EventLoop, Event, LoopStarted
             >>> class Process:
-            ...     def act(self, event: Event) -> Sequence[Event]:
+            ...     def __call__(self, event: Event) -> Sequence[Event]:
             ...         if isinstance(event, LoopStarted):
             ...             return [Event(t=1), Event(t=2)]
             ...         return []
@@ -100,7 +100,7 @@ class EventLoop:
         while event := self.next_event():
             logger.debug("Broadcasting event %r", event)
             for process in self.processes:
-                for event in process.act(event):
+                for event in process(event):
                     self.add_event(event)
         if event := self.peek_event():
             self.current_timestep = event.t
