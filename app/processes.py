@@ -76,7 +76,5 @@ class DealerProcess:
                     CardIssued(t=t + 1, player_id=player_id, card=card)
                     for player_id, card in self.table.deal()
                 ]
-            case Split(t=t, player_id=player_id):
-                return [HitDecisionRequested(t=t + 1, player_id=player_id)]
             case _:
                 return []
