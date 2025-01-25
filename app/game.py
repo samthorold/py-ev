@@ -4,6 +4,7 @@ import uuid
 from abc import ABC, abstractmethod
 from enum import Enum
 from itertools import product
+from typing import Self
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ class Card:
 
 class Deck:
     @classmethod
-    def new(cls, decks: int = 6, shuffle: bool = True):
+    def new(cls, decks: int = 6, shuffle: bool = True) -> Self:
         deck = cls(
             [
                 Card(suit=suit, face=rank)
