@@ -105,7 +105,7 @@ class EventLoop:
         if event := self.peek_event():
             self.current_timestep = event.t
             return True
-        logger.debug("No events to process")
+        logger.debug("No events to process.")
         return False
 
     def run(self) -> None:
