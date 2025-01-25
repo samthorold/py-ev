@@ -1,5 +1,6 @@
 -r main.txt
 black
-pytest
-mypy
 isort
+mypy
+pre-commit
+pytest
