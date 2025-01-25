@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 
 from app.event_loop import Event, LoopStarted
-from app.game import Dealer, Player, Table
+from app.game import Card, Dealer, Player, Table
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +25,14 @@ class NewPlay(Event):
 
 
 @dataclass(kw_only=True, frozen=True)
-class AskSplit(Event):
+class SplitDecisionRequested(Event):
     player_id: str
+
+
+@dataclass(kw_only=True, frozen=True)
+class CardIssued(Event):
+    player_id: str
+    card: Card
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -35,7 +41,7 @@ class Split(Event):
 
 
 @dataclass(kw_only=True, frozen=True)
-class AskHit(Event):
+class HitDecisionRequested(Event):
     player_id: str
 
 
@@ -47,13 +53,10 @@ class PlayerProcess:
     def __call__(self, event: Event) -> list[Event]:
         logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
-            case AskSplit(t=t, player_id=player_id):
-                if player_id == self.player.id:
-                    self.player.split(
-                        visible_cards=self.table.visible_cards,
-                        dealer=self.table.dealer.current_hand.cards,
-                    )
-                return [Split(t=t + 1, player_id=player_id)]
+            case CardIssued(player_id=player_id, card=card):
+                if self.player.id == player_id:
+                    self.player.add_card(card)
+                return []
             case _:
                 return []
 
@@ -69,9 +72,11 @@ class DealerProcess:
             case LoopStarted(t=t):
                 return [NewPlay(t=t + 1)]
             case NewPlay(t=t):
-                self.table.deal()
-                return [AskSplit(t=t + 1, player_id=self.table.current_player.id)]
+                return [
+                    CardIssued(t=t + 1, player_id=player_id, card=card)
+                    for player_id, card in self.table.deal()
+                ]
             case Split(t=t, player_id=player_id):
-                return [AskHit(t=t + 1, player_id=player_id)]
+                return [HitDecisionRequested(t=t + 1, player_id=player_id)]
             case _:
                 return []

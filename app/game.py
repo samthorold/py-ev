@@ -4,7 +4,7 @@ import uuid
 from abc import ABC, abstractmethod
 from enum import Enum
 from itertools import product
-from typing import Self
+from typing import Iterator, Self
 
 logger = logging.getLogger(__name__)
 
@@ -185,22 +185,12 @@ class Dealer(Player):
 
 
 class Table:
-    def __init__(self, deck: Deck, players: list[Player]) -> None:
+    def __init__(self, deck: Deck, dealer_id: str, player_ids: list[str]) -> None:
         self.deck = deck
-        self.players = players
-        self.dealer = Dealer(name="House")
-        self.current_player_idx = 0
+        self.player_ids = player_ids
+        self.dealer_id = dealer_id
+        self.current_player = player_ids[0]
         self.visible_cards: list[Card] = []
-
-    @property
-    def current_player(self) -> Player:
-        return self.players[self.current_player_idx]
-
-    def next_player(self) -> bool:
-        if self.current_player_idx == len(self.players) - 1:
-            return False
-        self.current_player_idx += 1
-        return True
 
     def draw(self, is_visible: bool = True) -> Card:
         card = self.deck.draw()
@@ -208,10 +198,10 @@ class Table:
             self.visible_cards.append(card)
         return card
 
-    def deal(self) -> None:
-        for player in self.players:
-            player.add_card(self.draw())
-        self.dealer.add_card(self.draw())
-        for player in self.players:
-            player.add_card(self.draw())
-        self.dealer.add_card(self.draw(is_visible=False))
+    def deal(self) -> Iterator[tuple[str, Card]]:
+        for player in self.player_ids:
+            yield (player, self.draw())
+        yield (self.dealer_id, self.draw())
+        for player in self.player_ids:
+            yield (player, self.draw())
+        yield (self.dealer_id, self.draw(is_visible=False))
