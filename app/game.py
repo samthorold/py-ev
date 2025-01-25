@@ -154,7 +154,7 @@ class Player(ABC):
         self.hands[self.current_hand_idx].add_card(card)
 
     def split(self, visible_cards: list[Card], dealer: list[Card]) -> None:
-        logger.debug("%s splitting hand %r", self.id[-7:], self.current_hand)
+        logger.debug("Player %s splitting hand %r", self.id[-7:], self.current_hand)
         if len(self.current_hand) != 2:
             return None
         if (

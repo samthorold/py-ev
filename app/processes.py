@@ -44,7 +44,7 @@ class PlayerProcess:
         self.player = player
         self.table = table
 
-    def act(self, event: Event) -> list[Event]:
+    def __call__(self, event: Event) -> list[Event]:
         logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
             case AskSplit(t=t, player_id=player_id):
@@ -63,7 +63,7 @@ class DealerProcess:
         self.dealer = dealer
         self.table = table
 
-    def act(self, event: Event) -> list[Event]:
+    def __call__(self, event: Event) -> list[Event]:
         logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
             case LoopStarted(t=t):
