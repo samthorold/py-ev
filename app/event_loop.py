@@ -32,6 +32,27 @@ class EventLoop:
         current_timestep: int = 0,
         add_loop_started_event: bool = True,
     ) -> None:
+        """Represents a discrete event loop.
+
+        Args:
+            processes: A list of processes that will be executed in the event loop.
+            events: A sequence of events to be added to the event loop.
+            current_timestep: The current timestep of the event loop.
+            add_loop_started_event: Whether to add a LoopStarted event to the event loop.
+
+        Examples:
+            >>> from app.event_loop import EventLoop, Event, LoopStarted
+            >>> class Process:
+            ...     def act(self, event: Event) -> Sequence[Event]:
+            ...         if isinstance(event, LoopStarted):
+            ...             return [Event(t=1), Event(t=2)]
+            ...         return []
+            ...
+            >>> processes = [Process()]
+            >>> events = [Event(t=0)]
+            >>> event_loop = EventLoop(processes, events)
+            >>> event_loop.run()
+        """
         self.processes = processes
         self.events: deque[Event] = deque()
         if add_loop_started_event:
@@ -47,12 +68,14 @@ class EventLoop:
     def peek_event(self) -> Event | None:
         if len(self.events) > 0:
             return self.events[0]
+        return None
 
     def next_event(self) -> Event | None:
         if event := self.peek_event():
             if event.t > self.current_timestep:
                 return None
             return self.events.popleft()
+        return None
 
     def tick(self) -> bool:
         logger.debug("Ticking at %d", self.current_timestep)
