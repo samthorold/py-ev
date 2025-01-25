@@ -45,17 +45,30 @@ class HitDecisionRequested(Event):
     player_id: str
 
 
+@dataclass(kw_only=True, frozen=True)
+class EndTurn(Event):
+    player_id: str
+
+
 class PlayerProcess:
     def __init__(self, *, player: Player, table: Table) -> None:
         self.player = player
         self.table = table
 
     def __call__(self, event: Event) -> list[Event]:
-        logger.debug("%s acting on event %r", self.__class__.__name__, event)
+        # logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
             case CardIssued(player_id=player_id, card=card):
                 if self.player.id == player_id:
                     self.player.add_card(card)
+                return []
+            case SplitDecisionRequested(t=t, player_id=player_id):
+                if self.player.id == player_id:
+                    if self.player.split(
+                        visible_cards=self.table.visible_cards,
+                        dealer=self.table.dealer_visible_cards,
+                    ):
+                        return [Split(t=t + 1, player_id=player_id)]
                 return []
             case _:
                 return []
@@ -67,14 +80,18 @@ class DealerProcess:
         self.table = table
 
     def __call__(self, event: Event) -> list[Event]:
-        logger.debug("%s acting on event %r", self.__class__.__name__, event)
+        # logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
             case LoopStarted(t=t):
                 return [NewPlay(t=t + 1)]
             case NewPlay(t=t):
-                return [
+                events: list[Event] = [
                     CardIssued(t=t + 1, player_id=player_id, card=card)
                     for player_id, card in self.table.deal()
                 ]
+                events.append(
+                    SplitDecisionRequested(t=t + 1, player_id=self.table.current_player)
+                )
+                return events
             case _:
                 return []

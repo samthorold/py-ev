@@ -1,8 +1,8 @@
 """PyEv Python Discrete Event Loop."""
 
+import heapq
 import logging
 import uuid
-from collections import deque
 from dataclasses import dataclass, field
 from typing import Protocol, Sequence
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, frozen=True)
 class Event:
-    id: str = field(default_factory=lambda: uuid.uuid4().hex)
+    id: str = field(default_factory=lambda: uuid.uuid4().hex[-5:])
     t: int
 
 
@@ -54,8 +54,9 @@ class EventLoop:
             >>> event_loop.run()
         """
         self.current_timestep = current_timestep
+        self.events_added_this_timestep = 0
         self.processes = processes
-        self.events: deque[Event] = deque()
+        self.events: list[tuple[int, int, Event]] = []
         if add_loop_started_event:
             self.add_event(LoopStarted(t=0))
         for event in events or []:
@@ -78,12 +79,13 @@ class EventLoop:
                 "Cannot add event in the past."
                 f" Current timestep: {self.current_timestep}, event timestep: {event.t}."
             )
-        self.events.insert(event.t, event)
+        heapq.heappush(self.events, (event.t, self.events_added_this_timestep, event))
+        self.events_added_this_timestep += 1
 
     def peek_event(self) -> Event | None:
         """Returns the next event without removing it from the backlog."""
         if len(self.events) > 0:
-            return self.events[0]
+            return self.events[0][-1]
         return None
 
     def next_event(self) -> Event | None:
@@ -91,17 +93,18 @@ class EventLoop:
         if event := self.peek_event():
             if event.t > self.current_timestep:
                 return None
-            return self.events.popleft()
+            return heapq.heappop(self.events)[-1]
         return None
 
     def tick(self) -> bool:
         """Broadcasts all events for the current timestep to all processes."""
         logger.debug("Ticking at %d", self.current_timestep)
         while event := self.next_event():
-            logger.debug("Broadcasting event %r.", event)
+            # logger.debug("Broadcasting event %r.", event)
             for process in self.processes:
                 for event in process(event):
                     self.add_event(event)
+        self.events_added_this_timestep = 0
         if event := self.peek_event():
             self.current_timestep = event.t
             return True

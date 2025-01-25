@@ -90,7 +90,7 @@ class Deck:
         if not self.cards:
             raise RuntimeError("Deck is empty")
         card = self.cards.pop()
-        logger.debug("Drawing card %r", card)
+        # logger.debug("Drawing card %r", card)
         self.drawn.append(card)
         return card
 
@@ -153,19 +153,20 @@ class Player(ABC):
     def add_card(self, card: Card) -> None:
         self.hands[self.current_hand_idx].add_card(card)
 
-    def split(self, visible_cards: list[Card], dealer: list[Card]) -> None:
+    def split(self, visible_cards: list[Card], dealer: list[Card]) -> bool:
         logger.debug("Player %s splitting hand %r", self.id[-7:], self.current_hand)
         if len(self.current_hand) != 2:
-            return None
+            return False
         if (
             FACE_VALUES[self.current_hand[0].face][0]
             != FACE_VALUES[self.current_hand[1].face][0]
         ):
-            return None
+            return False
         self.hands = [
             Hand(cards=[self.current_hand[0]]),
             Hand(cards=[self.current_hand[1]]),
         ]
+        return True
 
 
 class Dealer(Player):
@@ -180,8 +181,8 @@ class Dealer(Player):
             return False
         return True
 
-    def split(self, visible_cards: list[Card], dealer: list[Card]) -> None:
-        return None
+    def split(self, visible_cards: list[Card], dealer: list[Card]) -> bool:
+        return False
 
 
 class Table:
@@ -191,17 +192,24 @@ class Table:
         self.dealer_id = dealer_id
         self.current_player = player_ids[0]
         self.visible_cards: list[Card] = []
+        self.dealer_visible_cards: list[Card] = []
 
-    def draw(self, is_visible: bool = True) -> Card:
+    def draw(self, is_visible: bool = True, dealer: bool = False) -> Card:
         card = self.deck.draw()
         if is_visible:
             self.visible_cards.append(card)
+            if dealer:
+                self.dealer_visible_cards.append(card)
         return card
 
     def deal(self) -> Iterator[tuple[str, Card]]:
+        self.dealer_visible_cards = []
         for player in self.player_ids:
             yield (player, self.draw())
-        yield (self.dealer_id, self.draw())
+        yield (self.dealer_id, self.draw(dealer=True))
         for player in self.player_ids:
             yield (player, self.draw())
         yield (self.dealer_id, self.draw(is_visible=False))
+
+    def dealer_reveal(self, card: Card) -> None:
+        self.dealer_visible_cards.append(card)
