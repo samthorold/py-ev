@@ -76,7 +76,7 @@ class EventLoop:
         if event.t < self.current_timestep:
             raise RuntimeError(
                 "Cannot add event in the past."
-                f" Current timestep: {self.current_timestep}, event timestep: {event.t}"
+                f" Current timestep: {self.current_timestep}, event timestep: {event.t}."
             )
         self.events.insert(event.t, event)
 
@@ -98,7 +98,7 @@ class EventLoop:
         """Broadcasts all events for the current timestep to all processes."""
         logger.debug("Ticking at %d", self.current_timestep)
         while event := self.next_event():
-            logger.debug("Broadcasting event %r", event)
+            logger.debug("Broadcasting event %r.", event)
             for process in self.processes:
                 for event in process(event):
                     self.add_event(event)
