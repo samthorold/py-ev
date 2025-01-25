@@ -50,16 +50,16 @@ class EventLoop:
             ...
             >>> processes = [Process()]
             >>> events = [Event(t=0)]
-            >>> event_loop = EventLoop(processes, events)
+            >>> event_loop = EventLoop(processes=processes, events=events)
             >>> event_loop.run()
         """
+        self.current_timestep = current_timestep
         self.processes = processes
         self.events: deque[Event] = deque()
         if add_loop_started_event:
             self.add_event(LoopStarted(t=0))
         for event in events or []:
             self.add_event(event)
-        self.current_timestep = current_timestep
 
     def add_event(self, event: Event) -> None:
         """Adds an event to the event loop.
@@ -73,7 +73,12 @@ class EventLoop:
             >>> event_loop.add_event(Event(t=0))
         """
         logger.debug("Adding event %r", event)
-        self.events.insert(event.t + 1, event)
+        if event.t < self.current_timestep:
+            raise RuntimeError(
+                "Cannot add event in the past."
+                f" Current timestep: {self.current_timestep}, event timestep: {event.t}"
+            )
+        self.events.insert(event.t, event)
 
     def peek_event(self) -> Event | None:
         """Returns the next event without removing it from the backlog."""
