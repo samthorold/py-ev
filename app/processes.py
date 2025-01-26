@@ -55,20 +55,20 @@ class PlayerProcess:
         self.player = player
         self.table = table
 
-    def __call__(self, event: Event) -> list[Event]:
+    def __call__(self, event: Event, t: int) -> list[tuple[Event, int]]:
         # logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
             case CardIssued(player_id=player_id, card=card):
                 if self.player.id == player_id:
                     self.player.add_card(card)
                 return []
-            case SplitDecisionRequested(t=t, player_id=player_id):
+            case SplitDecisionRequested(player_id=player_id):
                 if self.player.id == player_id:
                     if self.player.split(
                         visible_cards=self.table.visible_cards,
                         dealer=self.table.dealer_visible_cards,
                     ):
-                        return [Split(t=t + 1, player_id=player_id)]
+                        return [(Split(player_id=player_id), t + 1)]
                 return []
             case _:
                 return []
@@ -79,18 +79,18 @@ class DealerProcess:
         self.dealer = dealer
         self.table = table
 
-    def __call__(self, event: Event) -> list[Event]:
+    def __call__(self, event: Event, t: int) -> list[tuple[Event, int]]:
         # logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
-            case LoopStarted(t=t):
-                return [NewPlay(t=t + 1)]
-            case NewPlay(t=t):
-                events: list[Event] = [
-                    CardIssued(t=t + 1, player_id=player_id, card=card)
+            case LoopStarted():
+                return [(NewPlay(), t + 1)]
+            case NewPlay():
+                events: list[tuple[Event, int]] = [
+                    (CardIssued(player_id=player_id, card=card), t + 1)
                     for player_id, card in self.table.deal()
                 ]
                 events.append(
-                    SplitDecisionRequested(t=t + 1, player_id=self.table.current_player)
+                    (SplitDecisionRequested(player_id=self.table.current_player), t + 1)
                 )
                 return events
             case _:
