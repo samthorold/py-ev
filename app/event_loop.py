@@ -42,6 +42,12 @@ class EventLoop:
         self.events: list[_Event] = []
         self.add_event(LoopStarted(), timestep)
 
+    def push(self, event: _Event) -> None:
+        heapq.heappush(self.events, event)
+
+    def pop(self) -> _Event:
+        return heapq.heappop(self.events)
+
     def add_event(self, event: Event, t: int) -> None:
         if t < self.current_timestep:
             raise RuntimeError(
@@ -50,7 +56,7 @@ class EventLoop:
             )
         count = self.timestamp_event_count.get(t, 0)
         logger.debug("Adding event (t=%d, priority=%d) %r", t, count, event)
-        heapq.heappush(self.events, _Event(t=t, priority=count, event=event))
+        self.push(_Event(t=t, priority=count, event=event))
         self.timestamp_event_count[t] = count + 1
 
     def peek_event(self) -> _Event | None:
@@ -60,7 +66,7 @@ class EventLoop:
 
     def next_event(self) -> _Event | None:
         if (event := self.peek_event()) and event.t <= self.current_timestep:
-            return heapq.heappop(self.events)
+            return self.pop()
         return None
 
     def tick(self) -> bool:
