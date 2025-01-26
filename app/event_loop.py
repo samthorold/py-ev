@@ -43,13 +43,13 @@ class EventLoop:
         self.add_event(LoopStarted(), timestep)
 
     def add_event(self, event: Event, t: int) -> None:
-        logger.debug("Adding event %r", event)
         if t < self.current_timestep:
             raise RuntimeError(
                 "Cannot add event in the past."
                 f" Current timestep: {self.current_timestep}, event timestep: {t}."
             )
         count = self.timestamp_event_count.get(t, 0)
+        logger.debug("Adding event (t=%d, priority=%d) %r", t, count, event)
         heapq.heappush(self.events, _Event(t=t, priority=count, event=event))
         self.timestamp_event_count[t] = count + 1
 
