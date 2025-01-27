@@ -18,6 +18,11 @@ class Event(Generic[T]):
             return (self.t, self.priority) > (o.t, o.priority)
         raise TypeError(f"Cannot compare Event to {o.__class__}")
 
+    def __eq__(self, o: Any) -> bool:
+        if isinstance(o, Event):
+            return (self.t, self.priority) == (o.t, o.priority)
+        raise TypeError(f"Cannot compare Event to {o.__class__}")
+
 
 class EventQueue(Generic[T]):
     def __init__(self, events: list[Event[T]] | None = None) -> None:
@@ -28,10 +33,13 @@ class EventQueue(Generic[T]):
     def __len__(self) -> int:
         return len(self.events)
 
+    def _push(self, event: Event[T]) -> None:
+        heapq.heappush(self.events, event)
+
     def push(self, data: T, t: int) -> None:
         priority = self.counter.get(t, 0)
         event = Event(t=t, priority=priority, data=data)
-        heapq.heappush(self.events, event)
+        self._push(event)
         self.counter[t] = priority + 1
 
     def pop(self) -> Event[T]:
