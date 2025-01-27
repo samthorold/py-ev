@@ -6,7 +6,7 @@ import random
 from app.config import Config
 from app.game import Card, Dealer, Deck, Player, Table
 from app.processes import DealerProcess, Event, NewPlay, PlayerProcess
-from pyev.event_loop import EventLoop, ProcessProtocol
+from pyev.event_loop import EventLoop
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +31,10 @@ table = Table(
     player_ids=[player.id for player in players],
 )
 
+loop = EventLoop[Event]()
+loop.add_process(DealerProcess(dealer=dealer, table=table))
+for player in players:
+    loop.add_process(PlayerProcess(player=player, table=table))
 
-processes: list[ProcessProtocol[Event]] = [
-    PlayerProcess(player=player, table=table) for player in players
-]
-processes.append(DealerProcess(dealer=dealer, table=table))
-
-loop = EventLoop(processes=processes)
 loop.add_event(NewPlay(), 0)
 loop.run()

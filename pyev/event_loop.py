@@ -16,10 +16,17 @@ class ProcessProtocol(Protocol, Generic[T]):
 
 
 class EventLoop(Generic[T]):
-    def __init__(self, processes: list[ProcessProtocol[T]], timestep: int = 0) -> None:
+    def __init__(
+        self,
+        processes: list[ProcessProtocol[T]] | None = None,
+        timestep: int = 0,
+    ) -> None:
         self.current_timestep = timestep
-        self.processes = processes
+        self.processes = [] if processes is None else processes
         self.events = EventQueue[T]()
+
+    def add_process(self, process: ProcessProtocol[T]) -> None:
+        self.processes.append(process)
 
     def add_event(self, event: T, t: int) -> None:
         if t < self.current_timestep:
@@ -35,8 +42,7 @@ class EventLoop(Generic[T]):
             return self.events.pop().data
         return None
 
-    def tick(self) -> bool:
-        logger.debug("Ticking at %d", self.current_timestep)
+    def broadcast(self) -> None:
         while event := self.next_event():
             for process in self.processes:
                 for response_event, response_event_t in process(
@@ -44,10 +50,12 @@ class EventLoop(Generic[T]):
                     self.current_timestep,
                 ):
                     self.add_event(response_event, response_event_t)
+
+    def tick(self) -> bool:
+        self.broadcast()
         if queue_event := self.events.peek():
             self.current_timestep = queue_event.t
             return True
-        logger.debug("Exhausted events.")
         return False
 
     def run(self) -> None:
