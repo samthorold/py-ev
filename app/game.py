@@ -90,7 +90,6 @@ class Deck:
         if not self.cards:
             raise RuntimeError("Deck is empty")
         card = self.cards.pop()
-        # logger.debug("Drawing card %r", card)
         self.drawn.append(card)
         return card
 
