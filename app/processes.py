@@ -1,25 +1,29 @@
 import logging
 from dataclasses import dataclass
 
-from app.event_loop import Event, LoopStarted
 from app.game import Card, Dealer, Player, Table
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True)
+class Event:
+    """Base class for game events."""
+
+
+@dataclass(kw_only=True, frozen=True)
 class NewPlay(Event):
     """
-    Game mechanics:
+     Game mechanics:
 
-    - Deal card face-up to players left to right then to dealer
-    - Deal card face-up to players left to right then face-down to dealer
-    - If dealer's face-up card to 10 or ace, they check their face-down card
-    - If the face-down card makes a natural, (do something).
-    - Left to right, players hit until they are bust or are happy with their hand
+     - Deal card face-up to players left to right then to dealer
+     - Deal card face-up to players left to right then face-down to dealer
+     - If dealer's face-up card to 10 or ace, they check their face-down card
+     - If the face-down card makes a natural, (do something).
+     - Left to right, players hit until they are bust or are happy with their hand
 
-    Player turn mechanics:
-    - May split
+     Player turn mechanics:
+     - May split
     - For each hand, hit until bust or happy
     """
 
@@ -56,7 +60,6 @@ class PlayerProcess:
         self.table = table
 
     def __call__(self, event: Event, t: int) -> list[tuple[Event, int]]:
-        # logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
             case CardIssued(player_id=player_id, card=card):
                 if self.player.id == player_id:
@@ -80,10 +83,7 @@ class DealerProcess:
         self.table = table
 
     def __call__(self, event: Event, t: int) -> list[tuple[Event, int]]:
-        # logger.debug("%s acting on event %r", self.__class__.__name__, event)
         match event:
-            case LoopStarted():
-                return [(NewPlay(), t + 1)]
             case NewPlay():
                 events: list[tuple[Event, int]] = [
                     (CardIssued(player_id=player_id, card=card), t + 1)

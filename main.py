@@ -4,9 +4,9 @@ import logging
 import random
 
 from app.config import Config
-from app.event_loop import EventLoop, ProcessProtocol
 from app.game import Card, Dealer, Deck, Player, Table
-from app.processes import DealerProcess, PlayerProcess
+from app.processes import DealerProcess, Event, NewPlay, PlayerProcess
+from pyev.event_loop import EventLoop, ProcessProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +32,11 @@ table = Table(
 )
 
 
-processes: list[ProcessProtocol] = [
+processes: list[ProcessProtocol[Event]] = [
     PlayerProcess(player=player, table=table) for player in players
 ]
 processes.append(DealerProcess(dealer=dealer, table=table))
 
 loop = EventLoop(processes=processes)
+loop.add_event(NewPlay(), 0)
 loop.run()
