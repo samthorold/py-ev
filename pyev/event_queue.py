@@ -22,16 +22,17 @@ class Event(Generic[T]):
 class EventQueue(Generic[T]):
     def __init__(self, events: list[Event[T]] | None = None) -> None:
         self.events = [] if events is None else events
+        self.counter: dict[int, int] = {}
         heapq.heapify(self.events)
 
     def __len__(self) -> int:
         return len(self.events)
 
-    def __contains__(self, o: Event[T]) -> bool:
-        return o in self.events
-
-    def push(self, event: Event[T]) -> None:
+    def push(self, data: T, t: int) -> None:
+        priority = self.counter.get(t, 0)
+        event = Event(t=t, priority=priority, data=data)
         heapq.heappush(self.events, event)
+        self.counter[t] = priority + 1
 
     def pop(self) -> Event[T]:
         return heapq.heappop(self.events)

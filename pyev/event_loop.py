@@ -3,7 +3,7 @@
 import logging
 from typing import Generic, Iterable, Protocol, TypeVar
 
-from pyev.event_queue import Event, EventQueue
+from pyev.event_queue import EventQueue
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,6 @@ class ProcessProtocol(Protocol, Generic[T]):
 class EventLoop(Generic[T]):
     def __init__(self, processes: list[ProcessProtocol[T]], timestep: int = 0) -> None:
         self.current_timestep = timestep
-        self.timestamp_event_count: dict[int, int] = {}
         self.processes = processes
         self.events = EventQueue[T]()
 
@@ -28,10 +27,8 @@ class EventLoop(Generic[T]):
                 "Cannot add event in the past."
                 f" Current timestep: {self.current_timestep}, event timestep: {t}."
             )
-        count = self.timestamp_event_count.get(t, 0)
-        logger.debug("Adding event (t=%d, priority=%d) %r", t, count, event)
-        self.events.push(Event(t=t, priority=count, data=event))
-        self.timestamp_event_count[t] = count + 1
+        logger.debug("Adding event (t=%d) %r", t, event)
+        self.events.push(data=event, t=t)
 
     def next_event(self) -> T | None:
         if (event := self.events.peek()) and event.t <= self.current_timestep:
