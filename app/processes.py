@@ -29,6 +29,11 @@ class NewPlay(Event):
 
 
 @dataclass(kw_only=True, frozen=True)
+class NewHand(Event):
+    player_id: str
+
+
+@dataclass(kw_only=True, frozen=True)
 class SplitDecisionRequested(Event):
     player_id: str
 
@@ -36,7 +41,7 @@ class SplitDecisionRequested(Event):
 @dataclass(kw_only=True, frozen=True)
 class CardIssued(Event):
     player_id: str
-    hand_idx: int
+    # hand_idx: int
     card: Card
 
 
@@ -48,7 +53,7 @@ class Split(Event):
 @dataclass(kw_only=True, frozen=True)
 class HitDecisionRequested(Event):
     player_id: str
-    hand_idx: int
+    # hand_idx: int
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -88,12 +93,11 @@ class DealerProcess:
         match event:
             case NewPlay():
                 events: list[tuple[Event, int]] = [
-                    (CardIssued(player_id=player_id, hand_idx=0, card=card), t + 1)
+                    (CardIssued(player_id=player_id, card=card), t + 1)
                     for player_id, card in self.table.deal()
                 ]
-                events.append(
-                    (SplitDecisionRequested(player_id=self.table.current_player), t + 1)
-                )
+                events.append((NewHand(player_id=self.table.current_player), t + 1))
                 return events
+
             case _:
                 return []
