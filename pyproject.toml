@@ -1,7 +1,7 @@
 [project]
 name = "py-ev"
 version = "0.1.0"
-description = "Python discrete event loop, with a blackjack simulation."
+description = "Python discrete event loop."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
@@ -33,6 +33,6 @@ select = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "pyev", "app"]
+testpaths = ["tests", "pyev"]
 addopts = ["--doctest-modules", "--import-mode=importlib"]
 pythonpath = ["."]

@@ -1,4 +1,6 @@
-https://bicyclecards.com/how-to-play/blackjack
+# py-ev
+
+Python discrete event loop.
 
 ## Development
 

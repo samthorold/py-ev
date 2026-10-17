@@ -1,6 +1,6 @@
 # py-ev
 
-Python discrete event loop (`pyev/`) with a blackjack simulation built on it (`app/`, `main.py`).
+Python discrete event loop (`pyev/`).
 
 ## Tooling
 
