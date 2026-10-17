@@ -17,8 +17,14 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.10.4,<0.11"]
+requires = ["uv_build>=0.13.1,<0.14"]
 build-backend = "uv_build"
+
+# The one place uv's version is pinned: setup-uv reads it in CI, and uv refuses
+# to run locally at any other version. Upgrade it together with the uv_build
+# bound above.
+[tool.uv]
+required-version = "==0.13.1"
 
 [tool.uv.build-backend]
 module-name = "pyev"
