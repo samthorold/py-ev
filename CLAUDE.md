@@ -7,11 +7,11 @@ Python discrete event loop. src layout: the package is `src/pyev/`, tests are in
 Managed with uv. See the README's Development section for commands.
 
 - Common commands live in `Taskfile.yml`. If `task` isn't installed, run it via `uvx --from go-task-bin task <name>`.
-- `uv run pre-commit run --all-files` runs everything: ruff check, ruff format, ty, pytest (including doctests).
+- `uv run pre-commit run --all-files` runs everything: ruff check, ruff format, ty, actionlint (which also runs shellcheck on workflow `run:` steps), shellcheck on shell scripts, and pytest (including doctests).
 - Hooks call `uv run --locked`, so after changing dependencies run `uv lock` or the hooks fail.
 - CI (`.github/workflows/ci.yml`) runs the same pre-commit hooks on PRs. On `main` it only runs when `uv.lock` changes, to refresh the uv cache that PRs restore from.
 - The CI job `pre-commit` is a required status check in the `main` ruleset. Renaming the job breaks merging until the ruleset is updated to the new name.
-- Workflows and shell scripts aren't covered by the hooks. Lint them by hand after changes: `uvx --from actionlint-py actionlint .github/workflows/*.yml` and `uvx --from shellcheck-py shellcheck .github/scripts/*.sh`.
+- `actionlint-py` ships only a source package, and building it downloads the binary from GitHub. On macOS with python.org Python, that fails with `CERTIFICATE_VERIFY_FAILED` until `/Applications/Python 3.13/Install Certificates.command` has been run. A one-off workaround is `SSL_CERT_FILE=/etc/ssl/cert.pem uv sync`. uv caches the built wheel afterwards.
 - Pin GitHub Actions to exact versions. `astral-sh/setup-uv` doesn't publish floating major tags (`@v10` fails).
 
 ## Versioning
