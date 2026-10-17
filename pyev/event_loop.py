@@ -1,11 +1,8 @@
 """PyEv Python Discrete Event Loop."""
 
-import logging
 from typing import Generic, Iterable, Protocol, TypeVar
 
 from pyev.event_queue import EventQueue
-
-logger = logging.getLogger(__name__)
 
 
 T = TypeVar("T")
@@ -34,7 +31,6 @@ class EventLoop(Generic[T]):
                 "Cannot add event in the past."
                 f" Current timestep: {self.current_timestep}, event timestep: {t}."
             )
-        logger.debug("Adding event (t=%d) %r", t, event)
         self.events.push(data=event, t=t)
 
     def next_event(self) -> T | None:
