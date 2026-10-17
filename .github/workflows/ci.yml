@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # PRs must be up to date and pass before merging, so re-running on main adds
+  # nothing, except when uv.lock changes: PRs can only restore caches saved on
+  # main, so this keeps the uv cache warm for them.
   push:
     branches: [main]
+    paths: [uv.lock]
   pull_request:
 
 jobs:
