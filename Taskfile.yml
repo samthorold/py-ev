@@ -24,3 +24,35 @@ tasks:
     cmds:
       - uv run ruff check --fix .
       - uv run ruff format .
+
+  version:
+    desc: Print the current package version
+    cmds:
+      - uv version --short
+    silent: true
+
+  bump:
+    desc: "Bump the version: task bump -- patch|minor|major"
+    preconditions:
+      - sh: test -n "{{.CLI_ARGS}}"
+        msg: "Usage: task bump -- patch|minor|major"
+    cmds:
+      - uv version --bump {{.CLI_ARGS}}
+
+  tag:
+    desc: Tag main with the current version and push the tag
+    vars:
+      VERSION:
+        sh: uv version --short
+    preconditions:
+      - sh: test "$(git branch --show-current)" = main
+        msg: Tags must be created from main
+      - sh: git diff --quiet HEAD
+        msg: Working tree has uncommitted changes
+      - sh: git fetch -q origin main && test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+        msg: Local main is not in sync with origin/main
+      - sh: "! git rev-parse -q --verify refs/tags/v{{.VERSION}}"
+        msg: Tag v{{.VERSION}} already exists
+    cmds:
+      - git tag -a v{{.VERSION}} -m "v{{.VERSION}}"
+      - git push origin v{{.VERSION}}
