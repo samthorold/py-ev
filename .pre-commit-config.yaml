@@ -33,6 +33,19 @@ repos:
         types: [python]
         pass_filenames: false
 
+      # actionlint also runs shellcheck on `run:` steps, since both are in the venv.
+      - id: actionlint
+        name: actionlint
+        entry: uv run --locked actionlint
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+
+      - id: shellcheck
+        name: shellcheck
+        entry: uv run --locked shellcheck
+        language: system
+        types: [shell]
+
       - id: pytest
         name: pytest (incl. doctests)
         entry: uv run --locked pytest -q
