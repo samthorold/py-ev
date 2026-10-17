@@ -24,21 +24,15 @@ jobs:
 
       - uses: astral-sh/setup-uv@v10.3.0
 
+      - name: Fetch PR base
+        if: github.event_name == 'pull_request'
+        run: git fetch --depth=1 origin "${{ github.event.pull_request.base.sha }}"
+
       - name: Check for an unreleased version
         id: version
-        run: |
-          version="$(uv version --short)"
-          tag="v${version}"
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" > /dev/null; then
-            echo "release=false" >> "$GITHUB_OUTPUT"
-            echo "${tag} is already released; nothing to publish." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "release=true" >> "$GITHUB_OUTPUT"
-            if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-              echo "Merging this PR will publish **${tag}**." >> "$GITHUB_STEP_SUMMARY"
-            fi
-          fi
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: .github/scripts/release-check.sh
 
       - name: Build
         if: steps.version.outputs.release == 'true'
