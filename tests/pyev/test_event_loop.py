@@ -1,5 +1,7 @@
 from collections.abc import Iterable
 
+import pytest
+
 from pyev import EventLoop
 
 
@@ -83,3 +85,12 @@ def test_run_until_can_be_resumed() -> None:
     loop.run(until=3)
 
     assert [t for _, t in recorder.seen] == [0, 1, 2, 3]
+
+
+def test_cannot_add_event_in_the_past() -> None:
+    loop = EventLoop[str](processes=[clock])
+    loop.add_event("tick", 0)
+    loop.run(until=2)
+
+    with pytest.raises(RuntimeError, match="in the past"):
+        loop.add_event("late", 1)
