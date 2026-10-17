@@ -73,12 +73,11 @@ class PlayerProcess:
                     self.player.add_card(card)
                 return []
             case SplitDecisionRequested(player_id=player_id):
-                if self.player.id == player_id:
-                    if self.player.split(
-                        visible_cards=self.table.visible_cards,
-                        dealer=self.table.dealer_visible_cards,
-                    ):
-                        return [(Split(player_id=player_id), t + 1)]
+                if self.player.id == player_id and self.player.split(
+                    visible_cards=self.table.visible_cards,
+                    dealer=self.table.dealer_visible_cards,
+                ):
+                    return [(Split(player_id=player_id), t + 1)]
                 return []
             case _:
                 return []

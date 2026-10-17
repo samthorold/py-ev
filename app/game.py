@@ -2,9 +2,10 @@ import logging
 import random
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from enum import Enum
 from itertools import product
-from typing import Iterator, Self
+from typing import Self
 
 logger = logging.getLogger(__name__)
 
@@ -172,13 +173,11 @@ class Dealer(Player):
     def hit(self, visible_cards: list[Card], dealer: list[Card]) -> bool:
         values = self.current_hand.values()
         # https://bicyclecards.com/how-to-play/blackjack
-        # If the dealer has an ace, and counting it as 11 would bring the total to 17 or more
-        # (but not over 21), the dealer must count the ace as 11 and stand
+        # If the dealer has an ace, and counting it as 11 would bring the total to 17
+        # or more (but not over 21), the dealer must count the ace as 11 and stand
         if any(16 < value <= BLACKJACK for value in values):
             return False
-        if all(value > BLACKJACK for value in values):
-            return False
-        return True
+        return not all(value > BLACKJACK for value in values)
 
     def split(self, visible_cards: list[Card], dealer: list[Card]) -> bool:
         return False

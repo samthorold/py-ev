@@ -3,3 +3,5 @@ pyrightconfig.json
 .venv
 .vscode
 .DS_Store
+.ruff_cache
+.pytest_cache

@@ -1,6 +1,0 @@
--r main.txt
-black
-isort
-mypy
-pre-commit
-pytest

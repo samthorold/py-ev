@@ -1,18 +1,16 @@
 """PyEv Python Discrete Event Loop."""
 
-from typing import Generic, Iterable, Protocol, TypeVar
+from collections.abc import Iterable
+from typing import Protocol
 
 from pyev.event_queue import EventQueue
 
 
-T = TypeVar("T")
-
-
-class ProcessProtocol(Protocol, Generic[T]):
+class ProcessProtocol[T](Protocol):
     def __call__(self, event: T, t: int) -> Iterable[tuple[T, int]]: ...
 
 
-class EventLoop(Generic[T]):
+class EventLoop[T]:
     def __init__(
         self,
         processes: list[ProcessProtocol[T]] | None = None,
