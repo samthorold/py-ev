@@ -48,3 +48,12 @@ def test_falsy_events_are_delivered() -> None:
     loop.run()
 
     assert recorder.seen == [(1, 0), (0, 0), (None, 0), (2, 0)]
+
+
+def test_add_process_does_not_mutate_callers_list() -> None:
+    processes = [Recorder[str]()]
+    loop = EventLoop[str](processes=processes)
+
+    loop.add_process(Recorder[str]())
+
+    assert len(processes) == 1

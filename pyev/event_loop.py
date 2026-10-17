@@ -13,11 +13,11 @@ class ProcessProtocol[T](Protocol):
 class EventLoop[T]:
     def __init__(
         self,
-        processes: list[ProcessProtocol[T]] | None = None,
+        processes: Iterable[ProcessProtocol[T]] = (),
         timestep: int = 0,
     ) -> None:
         self.current_timestep = timestep
-        self.processes = [] if processes is None else processes
+        self.processes = list(processes)
         self.events = EventQueue[T]()
 
     def add_process(self, process: ProcessProtocol[T]) -> None:
