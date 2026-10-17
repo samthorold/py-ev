@@ -6,6 +6,7 @@ Python discrete event loop (`pyev/`).
 
 Managed with uv. See the README's Development section for commands.
 
+- Common commands live in `Taskfile.yml`. If `task` isn't installed, run it via `uvx --from go-task-bin task <name>`.
 - `uv run pre-commit run --all-files` runs everything: ruff check, ruff format, ty, pytest (including doctests).
 - Hooks call `uv run --locked`, so after changing dependencies run `uv lock` or the hooks fail.
 - CI (`.github/workflows/ci.yml`) runs the same pre-commit hooks on PRs and pushes to `main`.
