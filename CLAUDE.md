@@ -1,6 +1,6 @@
 # py-ev
 
-Python discrete event loop (`pyev/`).
+Python discrete event loop. src layout: the package is `src/pyev/`, tests are in `tests/`.
 
 ## Tooling
 
