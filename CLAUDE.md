@@ -11,6 +11,7 @@ Managed with uv. See the README's Development section for commands.
 - Hooks call `uv run --locked`, so after changing dependencies run `uv lock` or the hooks fail.
 - CI (`.github/workflows/ci.yml`) runs the same pre-commit hooks on PRs. On `main` it only runs when `uv.lock` changes, to refresh the uv cache that PRs restore from.
 - The CI job `pre-commit` is a required status check in the `main` ruleset. Renaming the job breaks merging until the ruleset is updated to the new name.
+- Workflows and shell scripts aren't covered by the hooks. Lint them by hand after changes: `uvx --from actionlint-py actionlint .github/workflows/*.yml` and `uvx --from shellcheck-py shellcheck .github/scripts/*.sh`.
 - Pin GitHub Actions to exact versions. `astral-sh/setup-uv` doesn't publish floating major tags (`@v10` fails).
 
 ## Versioning
@@ -27,3 +28,4 @@ Managed with uv. See the README's Development section for commands.
 
 - Work on a branch, open a PR against `main`.
 - **PRs with passing CI may always be squash-merged** (`gh pr merge --squash --delete-branch`) without asking first. Confirm CI is green (`gh pr checks <n> --watch`) before merging; never merge with failing or pending checks.
+- The `main` ruleset requires PRs to be up to date. If a PR falls behind after another merge, run `gh pr update-branch <n>` and wait for CI again.
