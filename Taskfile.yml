@@ -1,0 +1,26 @@
+# https://taskfile.dev
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  test:
+    desc: Run tests (including doctests)
+    cmds:
+      - uv run pytest {{.CLI_ARGS}}
+
+  lint:
+    desc: Lint, check formatting and type check
+    cmds:
+      - uv run ruff check .
+      - uv run ruff format --check .
+      - uv run ty check
+
+  fmt:
+    desc: Apply lint fixes and format
+    cmds:
+      - uv run ruff check --fix .
+      - uv run ruff format .
