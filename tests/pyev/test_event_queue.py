@@ -37,3 +37,13 @@ def test_queue_priority() -> None:
     assert q.pop() == e1
     assert q.pop() == e2
     assert q.pop() == e3
+
+
+def test_push_after_init_queues_behind_initial_events() -> None:
+    q = EventQueue(
+        [Event(t=0, priority=0, data="first"), Event(t=0, priority=1, data="second")]
+    )
+
+    q.push("pushed", 0)
+
+    assert [q.pop().data for _ in range(3)] == ["first", "second", "pushed"]

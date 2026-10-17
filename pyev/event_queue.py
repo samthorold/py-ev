@@ -26,6 +26,10 @@ class EventQueue[T]:
     def __init__(self, events: list[Event[T]] | None = None) -> None:
         self.events = [] if events is None else events
         self.counter: dict[int, int] = {}
+        for event in self.events:
+            self.counter[event.t] = max(
+                self.counter.get(event.t, 0), event.priority + 1
+            )
         heapq.heapify(self.events)
 
     def __len__(self) -> int:
