@@ -1,25 +1,14 @@
 import heapq
-from typing import Any
+from dataclasses import dataclass, field
 
 
+@dataclass(frozen=True, order=True)
 class Event[T]:
-    def __init__(self, t: int, priority: int, data: T) -> None:
-        self.t = t
-        self.priority = priority
-        self.data = data
+    """Queued event, ordered (and compared) by `(t, priority)` only."""
 
-    def __repr__(self) -> str:
-        return f"<Event(t={self.t}, priority={self.priority}, data={self.data!r})>"
-
-    def __gt__(self, o: Any) -> bool:
-        if isinstance(o, Event):
-            return (self.t, self.priority) > (o.t, o.priority)
-        raise TypeError(f"Cannot compare Event to {o.__class__}")
-
-    def __eq__(self, o: Any) -> bool:
-        if isinstance(o, Event):
-            return (self.t, self.priority) == (o.t, o.priority)
-        raise TypeError(f"Cannot compare Event to {o.__class__}")
+    t: int
+    priority: int
+    data: T = field(compare=False)
 
 
 class EventQueue[T]:
