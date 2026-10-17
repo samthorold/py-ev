@@ -14,8 +14,12 @@ dev = [
     "ty>=0.0.89",
 ]
 
-[tool.uv]
-package = false
+[build-system]
+requires = ["uv_build>=0.10.4,<0.11"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "pyev"
 
 [tool.ruff]
 target-version = "py313"
@@ -33,6 +37,5 @@ select = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "pyev"]
+testpaths = ["tests", "src"]
 addopts = ["--doctest-modules", "--import-mode=importlib"]
-pythonpath = ["."]
