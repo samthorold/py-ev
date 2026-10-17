@@ -64,3 +64,12 @@ def test_items_are_hashable() -> None:
     b = QueueItem(t=0, priority=1, data="b")
 
     assert len({a, b, QueueItem(t=0, priority=0, data="a")}) == 2
+
+
+def test_queue_does_not_mutate_callers_list() -> None:
+    items = [QueueItem(t=1, priority=0, data="b"), QueueItem(t=0, priority=0, data="a")]
+    q = EventQueue(items)
+
+    q.pop()
+
+    assert [item.data for item in items] == ["b", "a"]

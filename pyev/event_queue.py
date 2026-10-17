@@ -1,4 +1,5 @@
 import heapq
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 
 
@@ -12,8 +13,8 @@ class QueueItem[T]:
 
 
 class EventQueue[T]:
-    def __init__(self, events: list[QueueItem[T]] | None = None) -> None:
-        self.events = [] if events is None else events
+    def __init__(self, events: Iterable[QueueItem[T]] = ()) -> None:
+        self.events = list(events)
         self.counter: dict[int, int] = {}
         for item in self.events:
             self.counter[item.t] = max(self.counter.get(item.t, 0), item.priority + 1)
