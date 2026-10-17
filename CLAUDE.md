@@ -1,0 +1,17 @@
+# py-ev
+
+Python discrete event loop (`pyev/`) with a blackjack simulation built on it (`app/`, `main.py`).
+
+## Tooling
+
+Managed with uv. See the README's Development section for commands.
+
+- `uv run pre-commit run --all-files` runs everything: ruff check, ruff format, ty, pytest (including doctests).
+- Hooks call `uv run --locked`, so after changing dependencies run `uv lock` or the hooks fail.
+- CI (`.github/workflows/ci.yml`) runs the same pre-commit hooks on PRs and pushes to `main`.
+- Pin GitHub Actions to exact versions. `astral-sh/setup-uv` doesn't publish floating major tags (`@v10` fails).
+
+## Workflow
+
+- Work on a branch, open a PR against `main`.
+- **PRs with passing CI may always be squash-merged** (`gh pr merge --squash --delete-branch`) without asking first. Confirm CI is green (`gh pr checks <n> --watch`) before merging; never merge with failing or pending checks.
