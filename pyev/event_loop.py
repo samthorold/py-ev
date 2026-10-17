@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from typing import Protocol
 
-from pyev.event_queue import Event, EventQueue
+from pyev.event_queue import EventQueue, QueueItem
 
 
 class ProcessProtocol[T](Protocol):
@@ -31,7 +31,7 @@ class EventLoop[T]:
             )
         self.events.push(data=event, t=t)
 
-    def _pop_due(self) -> Event[T] | None:
+    def _pop_due(self) -> QueueItem[T] | None:
         """Pop the next queued event if it is due at the current timestep."""
         if (item := self.events.peek()) is not None and item.t <= self.current_timestep:
             return self.events.pop()

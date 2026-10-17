@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from pyev.event_loop import EventLoop
+from pyev import EventLoop
 
 
 class Recorder[T]:
