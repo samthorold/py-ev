@@ -46,13 +46,23 @@ class EventLoop[T]:
                 ):
                     self.add_event(response_event, response_event_t)
 
-    def tick(self) -> bool:
-        self.broadcast()
-        if queue_event := self.events.peek():
-            self.current_timestep = queue_event.t
-            return True
-        return False
+    def tick(self, until: int | None = None) -> bool:
+        """Broadcast due events, then advance to the next queued timestep.
 
-    def run(self) -> None:
-        while self.tick():
+        Returns False, without advancing, if the queue is empty or the next
+        event is after `until`.
+        """
+        self.broadcast()
+        item = self.events.peek()
+        if item is None or (until is not None and item.t > until):
+            return False
+        self.current_timestep = item.t
+        return True
+
+    def run(self, until: int | None = None) -> None:
+        """Run until the queue is empty, or until all events at `until` are done.
+
+        Events after `until` stay queued, so the run can be resumed.
+        """
+        while self.tick(until):
             pass

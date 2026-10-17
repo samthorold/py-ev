@@ -57,3 +57,29 @@ def test_add_process_does_not_mutate_callers_list() -> None:
     loop.add_process(Recorder[str]())
 
     assert len(processes) == 1
+
+
+def clock(event: str, t: int) -> Iterable[tuple[str, int]]:
+    """Process that re-schedules itself forever, one timestep apart."""
+    return [("tick", t + 1)]
+
+
+def test_run_until_stops_an_unbounded_simulation() -> None:
+    recorder = Recorder[str]()
+    loop = EventLoop[str](processes=[clock, recorder])
+    loop.add_event("tick", 0)
+
+    loop.run(until=3)
+
+    assert [t for _, t in recorder.seen] == [0, 1, 2, 3]
+
+
+def test_run_until_can_be_resumed() -> None:
+    recorder = Recorder[str]()
+    loop = EventLoop[str](processes=[clock, recorder])
+    loop.add_event("tick", 0)
+
+    loop.run(until=1)
+    loop.run(until=3)
+
+    assert [t for _, t in recorder.seen] == [0, 1, 2, 3]
