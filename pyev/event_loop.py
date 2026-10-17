@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from typing import Protocol
 
-from pyev.event_queue import EventQueue
+from pyev.event_queue import EventQueue, QueueItem
 
 
 class ProcessProtocol[T](Protocol):
@@ -13,11 +13,11 @@ class ProcessProtocol[T](Protocol):
 class EventLoop[T]:
     def __init__(
         self,
-        processes: list[ProcessProtocol[T]] | None = None,
+        processes: Iterable[ProcessProtocol[T]] = (),
         timestep: int = 0,
     ) -> None:
         self.current_timestep = timestep
-        self.processes = [] if processes is None else processes
+        self.processes = list(processes)
         self.events = EventQueue[T]()
 
     def add_process(self, process: ProcessProtocol[T]) -> None:
@@ -31,27 +31,38 @@ class EventLoop[T]:
             )
         self.events.push(data=event, t=t)
 
-    def next_event(self) -> T | None:
-        if (event := self.events.peek()) and event.t <= self.current_timestep:
-            return self.events.pop().data
+    def _pop_due(self) -> QueueItem[T] | None:
+        """Pop the next queued event if it is due at the current timestep."""
+        if (item := self.events.peek()) is not None and item.t <= self.current_timestep:
+            return self.events.pop()
         return None
 
     def broadcast(self) -> None:
-        while event := self.next_event():
+        while (item := self._pop_due()) is not None:
             for process in self.processes:
                 for response_event, response_event_t in process(
-                    event,
+                    item.data,
                     self.current_timestep,
                 ):
                     self.add_event(response_event, response_event_t)
 
-    def tick(self) -> bool:
-        self.broadcast()
-        if queue_event := self.events.peek():
-            self.current_timestep = queue_event.t
-            return True
-        return False
+    def tick(self, until: int | None = None) -> bool:
+        """Broadcast due events, then advance to the next queued timestep.
 
-    def run(self) -> None:
-        while self.tick():
+        Returns False, without advancing, if the queue is empty or the next
+        event is after `until`.
+        """
+        self.broadcast()
+        item = self.events.peek()
+        if item is None or (until is not None and item.t > until):
+            return False
+        self.current_timestep = item.t
+        return True
+
+    def run(self, until: int | None = None) -> None:
+        """Run until the queue is empty, or until all events at `until` are done.
+
+        Events after `until` stay queued, so the run can be resumed.
+        """
+        while self.tick(until):
             pass

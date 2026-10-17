@@ -1,49 +1,41 @@
 import heapq
-from typing import Any
+from collections.abc import Iterable
+from dataclasses import dataclass, field
 
 
-class Event[T]:
-    def __init__(self, t: int, priority: int, data: T) -> None:
-        self.t = t
-        self.priority = priority
-        self.data = data
+@dataclass(frozen=True, order=True)
+class QueueItem[T]:
+    """Event data queued at timestep `t`, ordered and compared by `(t, priority)`."""
 
-    def __repr__(self) -> str:
-        return f"<Event(t={self.t}, priority={self.priority}, data={self.data!r})>"
-
-    def __gt__(self, o: Any) -> bool:
-        if isinstance(o, Event):
-            return (self.t, self.priority) > (o.t, o.priority)
-        raise TypeError(f"Cannot compare Event to {o.__class__}")
-
-    def __eq__(self, o: Any) -> bool:
-        if isinstance(o, Event):
-            return (self.t, self.priority) == (o.t, o.priority)
-        raise TypeError(f"Cannot compare Event to {o.__class__}")
+    t: int
+    priority: int
+    data: T = field(compare=False)
 
 
 class EventQueue[T]:
-    def __init__(self, events: list[Event[T]] | None = None) -> None:
-        self.events = [] if events is None else events
+    def __init__(self, events: Iterable[QueueItem[T]] = ()) -> None:
+        self.events = list(events)
         self.counter: dict[int, int] = {}
+        for item in self.events:
+            self.counter[item.t] = max(self.counter.get(item.t, 0), item.priority + 1)
         heapq.heapify(self.events)
 
     def __len__(self) -> int:
         return len(self.events)
 
-    def _push(self, event: Event[T]) -> None:
-        heapq.heappush(self.events, event)
+    def _push(self, item: QueueItem[T]) -> None:
+        heapq.heappush(self.events, item)
 
     def push(self, data: T, t: int) -> None:
         priority = self.counter.get(t, 0)
-        event = Event(t=t, priority=priority, data=data)
-        self._push(event)
+        item = QueueItem(t=t, priority=priority, data=data)
+        self._push(item)
         self.counter[t] = priority + 1
 
-    def pop(self) -> Event[T]:
+    def pop(self) -> QueueItem[T]:
         return heapq.heappop(self.events)
 
-    def peek(self) -> Event[T] | None:
+    def peek(self) -> QueueItem[T] | None:
         if self.events:
             return self.events[0]
         return None
