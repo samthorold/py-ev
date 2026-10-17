@@ -1,21 +1,16 @@
 """PyEv Python Discrete Event Loop."""
 
-import logging
-from typing import Generic, Iterable, Protocol, TypeVar
+from collections.abc import Iterable
+from typing import Protocol
 
 from pyev.event_queue import EventQueue
 
-logger = logging.getLogger(__name__)
 
-
-T = TypeVar("T")
-
-
-class ProcessProtocol(Protocol, Generic[T]):
+class ProcessProtocol[T](Protocol):
     def __call__(self, event: T, t: int) -> Iterable[tuple[T, int]]: ...
 
 
-class EventLoop(Generic[T]):
+class EventLoop[T]:
     def __init__(
         self,
         processes: list[ProcessProtocol[T]] | None = None,
@@ -34,7 +29,6 @@ class EventLoop(Generic[T]):
                 "Cannot add event in the past."
                 f" Current timestep: {self.current_timestep}, event timestep: {t}."
             )
-        logger.debug("Adding event (t=%d) %r", t, event)
         self.events.push(data=event, t=t)
 
     def next_event(self) -> T | None:

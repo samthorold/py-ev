@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0 # Use the latest tag from the repo
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -8,37 +8,34 @@ repos:
       - id: check-toml
       - id: check-json
       - id: debug-statements
-      - id: requirements-txt-fixer
       - id: check-added-large-files
 
+  # Tools run through `uv run` so they use the versions pinned in uv.lock, and
+  # work without an activated venv. `--locked` fails if uv.lock is stale.
   - repo: local
     hooks:
-      - id: black
-        name: black
-        entry: python -m black
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --locked ruff check --fix
         language: system
         types: [python]
 
-  - repo: local
-    hooks:
-      - id: isort
-        name: isort
-        entry: python -m isort
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --locked ruff format
         language: system
         types: [python]
 
-  - repo: local
-    hooks:
-      - id: mypy
-        name: mypy
-        entry: python -m mypy
+      - id: ty
+        name: ty check
+        entry: uv run --locked ty check
         language: system
         types: [python]
+        pass_filenames: false
 
-  - repo: local
-    hooks:
-      - id: doctest
-        name: doctest
-        entry: python -m doctest
+      - id: pytest
+        name: pytest (incl. doctests)
+        entry: uv run --locked pytest -q
         language: system
         types: [python]
+        pass_filenames: false

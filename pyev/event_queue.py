@@ -1,17 +1,15 @@
 import heapq
-from typing import Any, Generic, TypeVar
-
-T = TypeVar("T")
+from typing import Any
 
 
-class Event(Generic[T]):
+class Event[T]:
     def __init__(self, t: int, priority: int, data: T) -> None:
         self.t = t
         self.priority = priority
         self.data = data
 
     def __repr__(self) -> str:
-        return f"<Event(t={self.t}, priority={self.priority}, data={repr(self.data)})>"
+        return f"<Event(t={self.t}, priority={self.priority}, data={self.data!r})>"
 
     def __gt__(self, o: Any) -> bool:
         if isinstance(o, Event):
@@ -24,7 +22,7 @@ class Event(Generic[T]):
         raise TypeError(f"Cannot compare Event to {o.__class__}")
 
 
-class EventQueue(Generic[T]):
+class EventQueue[T]:
     def __init__(self, events: list[Event[T]] | None = None) -> None:
         self.events = [] if events is None else events
         self.counter: dict[int, int] = {}

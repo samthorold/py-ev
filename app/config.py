@@ -2,9 +2,9 @@ import os
 
 
 def get_env(name: str) -> str | None:
-    for name in (name, name.upper()):
-        if os.environ.get(name):
-            return os.environ[name]
+    for key in (name, name.upper()):
+        if os.environ.get(key):
+            return os.environ[key]
     return None
 
 
