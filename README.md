@@ -22,7 +22,7 @@ task fmt                    # ruff fix + format
 The version lives in `pyproject.toml` only; `pyev.__version__` reads it from the
 installed package metadata.
 
-1. On a branch: `task bump -- patch|minor|major`, then open a PR and merge it.
-2. On an up-to-date `main`: `task tag` creates and pushes `vX.Y.Z`.
-
-The Release workflow fails if the tag doesn't match the `pyproject.toml` version.
+To release, bump the version in a PR (`task bump -- patch|minor|major`) and merge
+it. The Release workflow then tags `vX.Y.Z` and publishes a GitHub Release with
+the built distributions and generated notes. On PRs, the workflow's summary says
+whether merging will publish a release.

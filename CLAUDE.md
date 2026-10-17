@@ -16,9 +16,10 @@ Managed with uv. See the README's Development section for commands.
 ## Versioning
 
 - Single source: `version` in `pyproject.toml`. Never hard-code it elsewhere. `pyev.__version__` uses `importlib.metadata`.
-- Bump with `task bump -- <part>` (wraps `uv version --bump`) in a PR. After it merges, `task tag` tags and pushes `vX.Y.Z` from `main`.
-- `.github/workflows/release.yml` runs on `v*` tags and fails if the tag and `pyproject.toml` disagree.
-- Pushing a tag is a release, so ask before running `task tag`. The squash-merge permission below doesn't cover it.
+- Releases happen on merge. `.github/workflows/release.yml` runs on every push to `main`: if `v<version>` isn't tagged yet, it builds, tags and publishes a GitHub Release. On PRs it's a dry run.
+- Bump with `task bump -- <part>` (wraps `uv version --bump`) in a PR. Never create or push `v*` tags by hand.
+- **Merging a PR that changes the version publishes a release, so ask before merging it.** The squash-merge permission below doesn't cover version bumps.
+- A tag created by the workflow's `GITHUB_TOKEN` doesn't trigger other workflows, so release work belongs in `release.yml` itself.
 
 ## Workflow
 
