@@ -17,7 +17,9 @@ Managed with uv. See the README's Development section for commands.
 
 - Single source: `version` in `pyproject.toml`. Never hard-code it elsewhere. `pyev.__version__` uses `importlib.metadata`.
 - Releases happen on merge. `.github/workflows/release.yml` runs on every push to `main`: if `v<version>` isn't tagged yet, it builds, tags and publishes a GitHub Release. On PRs it's a dry run.
-- Bump with `task bump -- <part>` (wraps `uv version --bump`) in a PR. Never create or push `v*` tags by hand.
+- **Feature PRs never change the version.** A release is its own PR that only bumps the version (`task bump -- <part>`, which wraps `uv version --bump`) and releases whatever is on `main`. Never create or push `v*` tags by hand.
+- On PRs, the Release workflow fails if the PR changes the version to one that's already tagged. Otherwise that bump would be silently skipped after merge. Its logic is in `.github/scripts/release-check.sh`.
+- Hotfixes: fix forward. Merge the fix, then a patch-bump PR, which keeps `main` releasable. Release branches (`release/X.Y` from a tag, with the fix merged to `main` first and then cherry-picked with `git cherry-pick -x`) are the agreed fallback but aren't set up yet. They'd need the release workflow and ruleset extended to `release/**`, plus `--latest=false` and `--notes-start-tag` handling.
 - **Merging a PR that changes the version publishes a release, so ask before merging it.** The squash-merge permission below doesn't cover version bumps.
 - A tag created by the workflow's `GITHUB_TOKEN` doesn't trigger other workflows, so release work belongs in `release.yml` itself.
 
